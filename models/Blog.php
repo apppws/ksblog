@@ -168,11 +168,11 @@ class Blog{
                  $path = '/uploads/' . $uploader->upload('tmp','goods');
                  // var_dump($path);
                  // die;
-                //  $id = lastInsertId();
+                 $id = $this->lastInsertId();
                 //  var_dump($id);
                  // 执行sql 语句
                  $stmt->execute([
-                     1,
+                     $id,
                      $path
                  ]);
              }
