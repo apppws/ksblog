@@ -1,6 +1,6 @@
 <?php 
 namespace models;
-class Role{
+class Admin{
 
     // 第一步连接数据库
    public $pdo = null;
@@ -26,14 +26,15 @@ class Role{
         return $this->pdo->lastInsertId();
     }
    
-     public function insert($role_name)
+     public function insert($username,$password)
     {
-        $sql = "INSERT INTO role(role_name) VALUE(?)";
+        $sql = "INSERT INTO admin(username,password) VALUES(?,?)";
 
         // echo $sql;die;
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            $role_name
+            $username,
+            $password
         ]);
         $this->data['id']= $this->lastInsertId();
 
@@ -41,7 +42,7 @@ class Role{
     }
     public function update($role_name,$id)
     {
-        $sql = "UPDATE role SET role_name=? WHERE id=?";
+        $sql = "UPDATE admin SET role_name=? WHERE id=?";
         $stmt = $this->pdo->prepare($sql);
         // var_dump($stmt);
         $stmt->execute([
@@ -52,12 +53,12 @@ class Role{
 
     public function findAll($options=[]){
         $_option = [
-            'fields' => 'a.*,GROUP_CONCAT(c.pri_name) pri_name',
+            'fields' => 'a.*,GROUP_CONCAT(c.role_name) pri_list ',
             'where' => 1,
             'order_by' => 'id',
             'order_way' => 'desc',
             'per_page'=>5,
-            'join'=>' a LEFT JOIN role_privilege b ON a.id = b.role_id LEFT JOIN privilege c ON b.pri_id = c.id',
+            'join'=>' a LEFT JOIN role_admin b ON a.id = b.admin_id LEFT JOIN role c ON b.role_id = c.id',
             'groupby'=>'group by a.id'
 
         ];
@@ -80,7 +81,7 @@ class Role{
         // var_dump($page);
         $offset = ($page-1)*$_option['per_page'];
         $sql = "SELECT {$_option['fields']}
-                 FROM role
+                 FROM admin
                  {$_option['join']}
                  WHERE {$_option['where']} 
                  {$_option['groupby']}
@@ -94,7 +95,7 @@ class Role{
         /**
          * 获取总的记录数
          */
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM role WHERE {$_option['where']}");
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM admin WHERE {$_option['where']}");
         $stmt->execute();
         $count = $stmt->fetch( \PDO::FETCH_COLUMN );
         // var_dump($count);
@@ -109,6 +110,7 @@ class Role{
         // }
         // echo "<pre>";
         // var_dump($data);
+        // die;
         // var_dump($page_str);
         return [
             'data' => $data,
@@ -118,53 +120,28 @@ class Role{
 
     public function findOne($id)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM role WHERE id=?");
+        $stmt = $this->pdo->prepare("SELECT * FROM admin WHERE id=?");
         $stmt->execute([$id]);
         return $stmt->fetch( \PDO::FETCH_ASSOC );
     }
     public function delete($id){
-        $stmt = $this->pdo->prepare("DELETE FROM role WHERE id=?");
+        $stmt = $this->pdo->prepare("DELETE FROM admin WHERE id=?");
         $stmt->execute([$id]);
-    }
-     // 递归排序
-     public function tree(){
-        $data  = $this->findAll();
-        // var_dump($data);
-        // 递归排序
-        $ret =  $this->_tree($data['data']);
-        // var_dump($ret);
-        return $ret;
-    }
-
-    public function _tree($data,$parent_id=0,$level=0){
-        // 先定义一个排序好的分类
-        static $_ret = [];
-        foreach($data as $v){
-            if($v['parent_id']==$parent_id){
-                $v['level'] = $level;
-                $_ret[] = $v;
-                $this->_tree($data,$v['id'],$level+1);
-            }
-
-        }
-        // var_dump($_ret);
-        // die;
-        return $_ret;
     }
     public function _after_write(){
         
         // 判断是否修改
         $id  = isset($_GET['id']) ? $_GET['id']: $this->data['id'];
         // 删除原权限
-        $stmt = $this->pdo->prepare("DELETE FROM role_privilege WHERE role_id=?");
+        $stmt = $this->pdo->prepare("DELETE FROM role_admin WHERE admin_id=?");
         $stmt->execute([
             $id
         ]);
         
         // 添加和修改执行的
-        $stmt = $this->pdo->prepare("INSERT INTO role_privilege(pri_id,role_id) VALUES(?,?)");
+        $stmt = $this->pdo->prepare("INSERT INTO role_admin(role_id,admin_id) VALUES(?,?)");
         // 循环所勾选的 pri_id 
-        foreach($_POST['pri_id'] as $v){    
+        foreach($_POST['role_id'] as $v){    
             $stmt->execute([
                 $v,
                 $id
@@ -174,14 +151,14 @@ class Role{
 
     // 取出这个角色所拥有的权限ID
     public function getPriIds($roleId){
-        $stmt = $this->pdo->prepare("SELECT pri_id FROM role_privilege WHERE role_id=?");
+        $stmt = $this->pdo->prepare("SELECT role_id FROM role_admin WHERE admin_id=?");
         $stmt->execute([$roleId]);
         $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         // var_dump($data);
         // die;
         $ret = [];
         foreach($data as $k=>$v){
-            $ret[] = $v['pri_id'];
+            $ret[] = $v['role_id'];
         }
         // 返回一维数组
         return $ret;
