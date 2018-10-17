@@ -1,50 +1,50 @@
 <?php view('common.nav');?>
-        <!--/sidebar-->
-        <div class="main-wrap">
+<!--/sidebar-->
+<div class="main-wrap">
 
-            <div class="crumb-wrap">
-                <div class="crumb-list"><i class="icon-font"></i>
-                    <a href="/index/design/">首页</a><span class="crumb-step">&gt;</span>
-                    <a href="/category/index">分类管理</a><span class="crumb-step">&gt;</span><span>新增分类</span>
-                    <!-- <a class="crumb-name" href="/index/design/">作品管理</a><span class="crumb-step">&gt;</span><span>新增作品</span> -->
-                </div>
-            </div>
-            <div class="result-wrap">
-                <div class="result-content">
-                    <form action="/category/doinsert" method="post" id="myform" name="myform" enctype="multipart/form-data">
-                        <table class="insert-tab" width="100%">
-                            <tbody>
-                                <tr>
-                                    <th><i class="require-red">*</i>分类名称：</th>
-                                    <td>
-                                        <input class="common-text required" id="parent_id" name="blog_type_name" size="50" value=""
-                                            type="text">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>父类id：</th>
-                                    <td><input class="common-text" name="parent_id" size="50" value="0" type="text"></td>
-                                </tr>
-                                <tr>
-                                    <th><i class="require-red">*</i>所有上级分类</th>
-                                    <td><input class="common-text" name="path" size="50" value="-" type="text"></td>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <td>
-                                        <input class="btn btn-primary btn6 mr10" value="提交" type="submit">
-                                        <input class="btn btn6" onClick="history.go(-1)" value="返回" type="button">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </form>
-                </div>
-            </div>
-
+    <div class="crumb-wrap">
+        <div class="crumb-list"><i class="icon-font"></i>
+            <a href="/index/design/">首页</a><span class="crumb-step">&gt;</span>
+            <a href="/role/index">角色管理</a><span class="crumb-step">&gt;</span><span>新增角色</span>
         </div>
-        <!--/main-->
     </div>
+    <div class="result-wrap">
+        <div class="result-content">
+            <form action="/role/doinsert" method="post" id="myform" name="myform" enctype="multipart/form-data">
+                <table class="insert-tab" width="100%">
+                    <tbody>
+                        <tr>
+                            <th><i class="require-red">*</i>角色名称：</th>
+                            <td>
+                                <input class="common-text required" id="role_name" name="role_name" size="50"
+                                    value="" type="text">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><i class="require-red">*</i>权限列表：</th>
+                            <td>
+                                <?php foreach($data as $v): ?>
+                                    <input type="checkbox" name="pri_id[]" value="<?=$v['id']?>">
+                                    <?=str_repeat('-', $v['level']*8).$v['pri_name']?><br>
+                                <?php endforeach; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <td>
+                                <input class="btn btn-primary btn6 mr10" value="提交" type="submit">
+                                <input class="btn btn6" onClick="history.go(-1)" value="返回" type="button">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+
+</div>
+<!--/main-->
+</div>
 </body>
 
 </html>
